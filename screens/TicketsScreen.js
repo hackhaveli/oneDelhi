@@ -19,12 +19,30 @@ const { width, height } = Dimensions.get('window');
 export default function TicketsScreen({ navigation }) {
   const [busTickets, setBusTickets] = useState([]);
 
-  // Load tickets from storage
+  // Check if ticket is valid (within 1 hour)
+  const isTicketValid = (ticket) => {
+    const oneHourInMs = 60 * 60 * 1000;
+    const currentTime = Date.now();
+    const timeDifference = currentTime - ticket.timestamp;
+    return timeDifference < oneHourInMs;
+  };
+
+  // Load tickets from storage and update status
   const loadTickets = async () => {
     try {
       const tickets = await AsyncStorage.getItem('busTickets');
       if (tickets) {
-        setBusTickets(JSON.parse(tickets));
+        const parsedTickets = JSON.parse(tickets);
+        // Update ticket status based on time
+        const updatedTickets = parsedTickets.map(ticket => {
+          if (ticket.status === 'VALID' && !isTicketValid(ticket)) {
+            return { ...ticket, status: 'INVALID' };
+          }
+          return ticket;
+        });
+        // Save updated tickets back to storage
+        await AsyncStorage.setItem('busTickets', JSON.stringify(updatedTickets));
+        setBusTickets(updatedTickets);
       }
     } catch (error) {
       console.error('Error loading tickets:', error);
@@ -89,19 +107,30 @@ export default function TicketsScreen({ navigation }) {
         <View style={styles.ticketSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>My Bus Ticket</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('AllTickets')}>
               <Text style={styles.viewAllText}>View all tickets</Text>
             </TouchableOpacity>
           </View>
           {busTickets.length > 0 ? (
             <View style={styles.ticketsList}>
               {busTickets.slice(0, 3).map((ticket) => (
-                <View key={ticket.id} style={styles.ticketItemCard}>
+                <TouchableOpacity 
+                  key={ticket.id} 
+                  style={[
+                    styles.ticketItemCard,
+                    ticket.status === 'INVALID' && styles.invalidTicketCard
+                  ]}
+                  onPress={() => navigation.navigate('TicketDetail', { ticket })}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.ticketHeader}>
                     <Text style={styles.ticketRoute}>{ticket.routeNumber}</Text>
-                    <View style={styles.pendingBadge}>
-                      <Text style={styles.pendingText}>{ticket.status}</Text>
-                    </View>
+                    {/* Only show badge for invalid tickets */}
+                    {ticket.status === 'INVALID' && (
+                      <View style={styles.invalidBadgeSmall}>
+                        <Text style={styles.invalidTextSmall}>INVALID</Text>
+                      </View>
+                    )}
                   </View>
                   <Text style={styles.ticketDateTime}>{ticket.date} {ticket.time}</Text>
                   <View style={styles.ticketRouteInfo}>
@@ -113,7 +142,8 @@ export default function TicketsScreen({ navigation }) {
                     <Text style={styles.ticketBusType}>{ticket.busType}</Text>
                     <Text style={styles.ticketPrice}>₹{ticket.totalAmount.toFixed(1)}</Text>
                   </View>
-                </View>
+                  <Text style={styles.transactionIdSmall}>T{ticket.timestamp}</Text>
+                </TouchableOpacity>
               ))}
             </View>
           ) : (
@@ -272,6 +302,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     position: 'relative',
   },
+  invalidTicketCard: {
+    opacity: 0.7,
+    backgroundColor: '#FFF5F5',
+  },
   ticketHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -283,18 +317,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1a1a1a',
   },
-  pendingBadge: {
-    backgroundColor: 'rgba(227, 24, 55, 0.1)',
+  invalidBadgeSmall: {
+    backgroundColor: 'rgba(227, 24, 55, 0.15)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 4,
     transform: [{ rotate: '-5deg' }],
   },
-  pendingText: {
+  invalidTextSmall: {
     color: '#E31837',
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  transactionIdSmall: {
+    fontSize: 10,
+    color: '#BBB',
+    marginTop: 8,
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   ticketDateTime: {
     fontSize: 12,

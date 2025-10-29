@@ -73,7 +73,7 @@ export default function CompletePaymentScreen({ navigation, route }) {
         totalAmount: totalAmount || 0,
         date: new Date().toLocaleDateString(),
         time: new Date().toLocaleTimeString(),
-        status: 'PENDING',
+        status: 'VALID',
         timestamp: Date.now(),
       };
 
