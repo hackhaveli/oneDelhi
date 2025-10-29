@@ -12,24 +12,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 
-export default function TicketDetailScreen({ navigation, route }) {
-  const { ticket } = route.params;
+export default function PassDetailScreen({ navigation, route }) {
+  const { pass } = route.params;
   const [showQR, setShowQR] = useState(false);
 
-  // Check if ticket is valid (within 1 hour of booking)
-  const isTicketValid = () => {
+  // Check if pass is valid (within 1 hour of booking)
+  const isPassValid = () => {
     const oneHourInMs = 60 * 60 * 1000;
     const currentTime = Date.now();
-    const timeDifference = currentTime - ticket.timestamp;
-    return timeDifference < oneHourInMs && ticket.status !== 'INVALID';
+    const timeDifference = currentTime - pass.timestamp;
+    return timeDifference < oneHourInMs && pass.status !== 'INVALID';
   };
 
-  const ticketValid = isTicketValid();
-  const backgroundColor = ticketValid ? '#FF6B35' : '#E31837';
+  const passValid = isPassValid();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <StatusBar barStyle="light-content" backgroundColor={backgroundColor} />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#D81B60" />
       
       {/* Header */}
       <View style={styles.header}>
@@ -39,13 +38,16 @@ export default function TicketDetailScreen({ navigation, route }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Ticket Card */}
-        <View style={styles.ticketCard}>
-          <Text style={styles.ticketTitle}>Transport Dept. of Delhi</Text>
+        {/* Pass Card */}
+        <View style={styles.passCard}>
+          {/* Pink Top Line */}
+          <View style={styles.pinkTopLine} />
           
-          <View style={styles.ticketRow}>
-            <Text style={styles.ticketId}>{ticket.id}</Text>
-            <Text style={styles.totalAmount}>₹{ticket.totalAmount.toFixed(1)}</Text>
+          <Text style={styles.passTitle}>Transport Dept. of Delhi</Text>
+          
+          <View style={styles.passRow}>
+            <Text style={styles.passId}>{pass.id}</Text>
+            <Text style={styles.totalAmount}>₹0.0</Text>
           </View>
 
           <View style={styles.divider} />
@@ -54,43 +56,43 @@ export default function TicketDetailScreen({ navigation, route }) {
           <View style={styles.infoRow}>
             <View style={styles.infoLeft}>
               <Text style={styles.label}>Bus Route</Text>
-              <Text style={styles.value}>{ticket.routeNumber}</Text>
+              <Text style={styles.value}>{pass.routeNumber}</Text>
             </View>
             <View style={styles.infoRight}>
               <Text style={styles.labelRight}>Fare</Text>
-              <Text style={styles.valueRight}>₹{(ticket.totalAmount / ticket.ticketCount).toFixed(1)}</Text>
+              <Text style={styles.valueRight}>₹0.0</Text>
             </View>
           </View>
 
-          {/* Booking Time and Tickets */}
+          {/* Booking Time and Passes */}
           <View style={styles.infoRow}>
             <View style={styles.infoLeft}>
               <Text style={styles.label}>Booking Time</Text>
-              <Text style={styles.value}>{ticket.date} | {ticket.time}</Text>
+              <Text style={styles.value}>{pass.date} | {pass.time}</Text>
             </View>
             <View style={styles.infoRight}>
               <Text style={styles.labelRight}>Bus Tickets</Text>
-              <Text style={styles.valueRight}>{ticket.ticketCount}</Text>
+              <Text style={styles.valueRight}>{pass.passCount}</Text>
             </View>
           </View>
 
           {/* Starting Stop */}
           <View style={styles.stopSection}>
             <Text style={styles.label}>Starting stop</Text>
-            <Text style={styles.stopName}>{ticket.sourceStop}</Text>
+            <Text style={styles.stopName}>{pass.sourceStop}</Text>
           </View>
 
           {/* Ending Stop */}
           <View style={styles.stopSection}>
             <Text style={styles.label}>Ending stop</Text>
-            <Text style={styles.stopName}>{ticket.destinationStop}</Text>
+            <Text style={styles.stopName}>{pass.destinationStop}</Text>
           </View>
 
           {/* Transaction ID */}
-          <Text style={styles.transactionId}>T{ticket.timestamp}</Text>
+          <Text style={styles.transactionId}>T{pass.timestamp}</Text>
 
           {/* Show QR Code Button */}
-          {ticketValid ? (
+          {passValid ? (
             <TouchableOpacity 
               style={styles.qrButton}
               onPress={() => setShowQR(true)}
@@ -103,12 +105,15 @@ export default function TicketDetailScreen({ navigation, route }) {
               <Text style={styles.invalidText}>INVALID</Text>
             </View>
           )}
+
+          {/* Pass Type */}
+          <Text style={styles.passType}>Single journey pass</Text>
         </View>
 
         {/* Status Message */}
-        {!ticketValid && (
+        {!passValid && (
           <Text style={styles.expiredMessage}>
-            This ticket has expired (valid for 1 hour after booking)
+            This pass has expired (valid for 1 hour after booking)
           </Text>
         )}
       </ScrollView>
@@ -133,7 +138,7 @@ export default function TicketDetailScreen({ navigation, route }) {
             
             <View style={styles.qrContainer}>
               <QRCode
-                value={`TICKET:${ticket.id}:${ticket.routeNumber}:${ticket.timestamp}`}
+                value={`PASS:${pass.id}:${pass.routeNumber}:${pass.timestamp}`}
                 size={250}
                 backgroundColor="white"
                 color="black"
@@ -141,6 +146,7 @@ export default function TicketDetailScreen({ navigation, route }) {
             </View>
             
             <Text style={styles.qrSubtext}>Show this to the conductor</Text>
+            <Text style={styles.freePassText}>FREE BUS PASS</Text>
           </View>
         </View>
       </Modal>
@@ -151,6 +157,7 @@ export default function TicketDetailScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#D81B60',
   },
   header: {
     paddingHorizontal: 16,
@@ -165,7 +172,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
-  ticketCard: {
+  passCard: {
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 20,
@@ -176,21 +183,31 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    overflow: 'hidden',
   },
-  ticketTitle: {
+  pinkTopLine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 6,
+    backgroundColor: '#D81B60',
+  },
+  passTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
     marginBottom: 16,
+    marginTop: 8,
   },
-  ticketRow: {
+  passRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
-  ticketId: {
+  passId: {
     fontSize: 14,
     color: '#666',
     fontWeight: '600',
@@ -198,7 +215,7 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#D81B60',
   },
   divider: {
     height: 1,
@@ -256,13 +273,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   qrButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#D81B60',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 8,
     gap: 8,
+    marginBottom: 12,
   },
   qrButtonText: {
     color: 'white',
@@ -276,12 +294,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#E31837',
+    marginBottom: 12,
   },
   invalidText: {
     color: '#E31837',
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 2,
+  },
+  passType: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   expiredMessage: {
     color: 'white',
@@ -332,5 +357,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 20,
     textAlign: 'center',
+  },
+  freePassText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#D81B60',
+    marginTop: 12,
+    letterSpacing: 1,
   },
 });

@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
-  SafeAreaView,
   TextInput,
   Image,
   ImageBackground,
   Animated,
   PanResponder
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 

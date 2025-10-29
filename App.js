@@ -9,6 +9,9 @@ import BusTicketsScreen from './screens/BusTicketsScreen';
 import BuyTicketsScreen from './screens/BuyTicketsScreen';
 import TicketDetailScreen from './screens/TicketDetailScreen';
 import AllTicketsScreen from './screens/AllTicketsScreen';
+import BuyPassesScreen from './screens/BuyPassesScreen';
+import CompletePaymentPassScreen from './screens/CompletePaymentPassScreen';
+import PassDetailScreen from './screens/PassDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +27,9 @@ export default function App() {
         <Stack.Screen name="BuyTickets" component={BuyTicketsScreen} />
         <Stack.Screen name="TicketDetail" component={TicketDetailScreen} />
         <Stack.Screen name="AllTickets" component={AllTicketsScreen} />
+        <Stack.Screen name="BuyPasses" component={BuyPassesScreen} />
+        <Stack.Screen name="CompletePaymentPass" component={CompletePaymentPassScreen} />
+        <Stack.Screen name="PassDetail" component={PassDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -7,9 +7,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function TicketsScreen({ navigation }) {
   const [busTickets, setBusTickets] = useState([]);
+  const [busPasses, setBusPasses] = useState([]);
 
   // Check if ticket is valid (within 1 hour)
   const isTicketValid = (ticket) => {
@@ -49,10 +50,33 @@ export default function TicketsScreen({ navigation }) {
     }
   };
 
-  // Reload tickets when screen is focused
+  // Load passes from storage and update status
+  const loadPasses = async () => {
+    try {
+      const passes = await AsyncStorage.getItem('busPasses');
+      if (passes) {
+        const parsedPasses = JSON.parse(passes);
+        // Update pass status based on time
+        const updatedPasses = parsedPasses.map(pass => {
+          if (pass.status === 'VALID' && !isTicketValid(pass)) {
+            return { ...pass, status: 'INVALID' };
+          }
+          return pass;
+        });
+        // Save updated passes back to storage
+        await AsyncStorage.setItem('busPasses', JSON.stringify(updatedPasses));
+        setBusPasses(updatedPasses);
+      }
+    } catch (error) {
+      console.error('Error loading passes:', error);
+    }
+  };
+
+  // Reload tickets and passes when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       loadTickets();
+      loadPasses();
     }, [])
   );
 
@@ -83,7 +107,10 @@ export default function TicketsScreen({ navigation }) {
             <Text style={styles.ticketCardSubtitle}>Search & Book</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.ticketCard}>
+          <TouchableOpacity 
+            style={styles.ticketCard}
+            onPress={() => navigation.navigate('BuyPasses')}
+          >
             <View style={styles.ticketIconContainer}>
               <MaterialCommunityIcons name="ticket-percent" size={40} color="#FF1493" />
               <View style={styles.newBadge}>
@@ -174,9 +201,45 @@ export default function TicketsScreen({ navigation }) {
               <Text style={styles.viewAllText}>View all passes</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.clickToViewCard}>
-            <Text style={styles.clickToViewText}>Click to View</Text>
-          </View>
+          {busPasses.length > 0 ? (
+            <View style={styles.ticketsList}>
+              {busPasses.slice(0, 3).map((pass) => (
+                <TouchableOpacity 
+                  key={pass.id} 
+                  style={[
+                    styles.passItemCard,
+                    pass.status === 'INVALID' && styles.invalidPassCard
+                  ]}
+                  onPress={() => navigation.navigate('PassDetail', { pass })}
+                  activeOpacity={0.7}
+                >
+                  {/* Pink Top Line */}
+                  <View style={styles.pinkTopLine} />
+                  
+                  <View style={styles.ticketHeader}>
+                    <Text style={styles.passRoute}>{pass.routeNumber}</Text>
+                    {/* Only show badge for invalid passes */}
+                    {pass.status === 'INVALID' && (
+                      <View style={styles.invalidBadgeSmall}>
+                        <Text style={styles.invalidTextSmall}>INVALID</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.ticketDateTime}>{pass.date} {pass.time}</Text>
+                  <Text style={styles.passIdSmall}>{pass.id}</Text>
+                  <View style={styles.ticketFooter}>
+                    <Text style={styles.passCountText}>x {pass.passCount}</Text>
+                    <Text style={styles.freeText}>FREE</Text>
+                  </View>
+                  <Text style={styles.transactionIdSmall}>T{pass.timestamp}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyTicketCard}>
+              <Text style={styles.noTicketText}>No Pass Available</Text>
+            </View>
+          )}
         </View>
 
         {/* Bottom spacing for navigation */}
@@ -305,6 +368,51 @@ const styles = StyleSheet.create({
   invalidTicketCard: {
     opacity: 0.7,
     backgroundColor: '#FFF5F5',
+  },
+  passItemCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  pinkTopLine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 6,
+    backgroundColor: '#D81B60',
+  },
+  invalidPassCard: {
+    opacity: 0.7,
+    backgroundColor: '#FFF5F5',
+  },
+  passRoute: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#D81B60',
+  },
+  passIdSmall: {
+    fontSize: 11,
+    color: '#999',
+    marginVertical: 4,
+  },
+  passCountText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  freeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#D81B60',
   },
   ticketHeader: {
     flexDirection: 'row',

@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  SafeAreaView,
   Modal,
   Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import delhiRoutes from '../data/delhiRoutes';
 
