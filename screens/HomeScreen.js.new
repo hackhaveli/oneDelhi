@@ -1,0 +1,300 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ImageBackground,
+  Dimensions,
+  StatusBar,
+  SafeAreaView,
+} from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+
+export default function HomeScreen({ navigation }) {
+  const [activeTab, setActiveTab] = useState('bus');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#c62828" />
+      
+      {/* Header with Background Image */}
+      <ImageBackground
+        source={require('../assets/background.png')}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Welcome to OneDelhi</Text>
+          <Text style={styles.headerSubtitle}>Plan your journey with ease</Text>
+        </View>
+      </ImageBackground>
+
+      {/* Main Content */}
+      <ScrollView style={styles.content}>
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <TouchableOpacity 
+            style={[styles.actionButton, activeTab === 'bus' && styles.activeActionButton]}
+            onPress={() => setActiveTab('bus')}
+          >
+            <MaterialCommunityIcons 
+              name="bus" 
+              size={24} 
+              color={activeTab === 'bus' ? '#fff' : '#c62828'} 
+            />
+            <Text style={[styles.actionText, activeTab === 'bus' && styles.activeActionText]}>
+              Buses
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, activeTab === 'metro' && styles.activeActionButton]}
+            onPress={() => setActiveTab('metro')}
+          >
+            <MaterialCommunityIcons 
+              name="subway" 
+              size={24} 
+              color={activeTab === 'metro' ? '#fff' : '#c62828'} 
+            />
+            <Text style={[styles.actionText, activeTab === 'metro' && styles.activeActionText]}>
+              Metro
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, activeTab === 'train' && styles.activeActionButton]}
+            onPress={() => setActiveTab('train')}
+          >
+            <MaterialCommunityIcons 
+              name="train" 
+              size={24} 
+              color={activeTab === 'train' ? '#fff' : '#c62828'} 
+            />
+            <Text style={[styles.actionText, activeTab === 'train' && styles.activeActionText]}>
+              Trains
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Bus Routes */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Popular Bus Routes</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAll}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.routesContainer}
+          >
+            {[
+              { id: 1, from: 'Kashmere Gate', to: 'Connaught Place', number: 'Route 522' },
+              { id: 2, from: 'Rajouri Garden', to: 'Lajpat Nagar', number: 'Route 543' },
+              { id: 3, from: 'Rohini', to: 'Badarpur', number: 'Route 568' },
+            ].map(route => (
+              <TouchableOpacity key={route.id} style={styles.routeCard}>
+                <View style={styles.routeInfo}>
+                  <Text style={styles.routeFromTo}>
+                    {route.from} → {route.to}
+                  </Text>
+                  <Text style={styles.routeNumber}>{route.number}</Text>
+                </View>
+                <MaterialCommunityIcons 
+                  name="arrow-right-circle" 
+                  size={24} 
+                  color="#c62828" 
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Nearby Stops */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Nearby Stops</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAll}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.stopsContainer}>
+            {[
+              { id: 1, name: 'Kashmere Gate ISBT', distance: '0.5 km', buses: 12 },
+              { id: 2, name: 'Red Fort', distance: '1.2 km', buses: 8 },
+              { id: 3, name: 'Chandni Chowk', distance: '1.5 km', buses: 15 },
+            ].map(stop => (
+              <View key={stop.id} style={styles.stopItem}>
+                <View style={styles.stopIcon}>
+                  <MaterialCommunityIcons name="bus-stop" size={24} color="#fff" />
+                </View>
+                <View style={styles.stopInfo}>
+                  <Text style={styles.stopName}>{stop.name}</Text>
+                  <Text style={styles.stopDetails}>
+                    {stop.distance} • {stop.buses} buses
+                  </Text>
+                </View>
+                <MaterialCommunityIcons 
+                  name="chevron-right" 
+                  size={24} 
+                  color="#9e9e9e" 
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    height: 200,
+    justifyContent: 'flex-end',
+    paddingBottom: 20,
+  },
+  headerContent: {
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  content: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  activeActionButton: {
+    backgroundColor: '#c62828',
+  },
+  actionText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  activeActionText: {
+    color: '#fff',
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  seeAll: {
+    color: '#c62828',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  routesContainer: {
+    paddingHorizontal: 15,
+  },
+  routeCard: {
+    width: 220,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginRight: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  routeInfo: {
+    flex: 1,
+  },
+  routeFromTo: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 5,
+  },
+  routeNumber: {
+    fontSize: 13,
+    color: '#757575',
+  },
+  stopsContainer: {
+    paddingHorizontal: 5,
+  },
+  stopItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 15,
+    marginBottom: 10,
+  },
+  stopIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#c62828',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
+  stopInfo: {
+    flex: 1,
+  },
+  stopName: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 3,
+  },
+  stopDetails: {
+    fontSize: 13,
+    color: '#757575',
+  },
+});
